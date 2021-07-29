@@ -18,10 +18,10 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan('dev'));
-app.use(trim);
+app.use(trim());
 
-app.get('/', (req: Request, res: Response) => {
-	res.send('Hello World!');
+app.get('/', (_, res: Response) => {
+	return res.send('Hello World!');
 });
 app.use('/api/auth', authRoutes);
 

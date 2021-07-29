@@ -6,9 +6,14 @@ import {
 	Index,
 	CreateDateColumn,
 	UpdateDateColumn,
+	BeforeInsert,
 } from 'typeorm';
 
-import { IsEmail, Min } from 'class-validator';
+import { Exclude, classToPlain } from 'class-transformer';
+
+import { IsEmail, Length } from 'class-validator';
+
+import { hash } from 'bcrypt';
 
 @Entity('users')
 export default class User extends BaseEntity {
@@ -16,6 +21,8 @@ export default class User extends BaseEntity {
 		super();
 		Object.assign(this, user);
 	}
+
+	@Exclude()
 	@PrimaryGeneratedColumn()
 	id: number;
 
@@ -26,11 +33,12 @@ export default class User extends BaseEntity {
 
 	@Column({ unique: true })
 	@Index()
-	@Min(3, { message: 'Username must be at least 3 characters long' })
+	@Length(3, 255, { message: 'Username must be at least 3 characters long' })
 	username: string;
 
 	@Column()
-	@Min(6)
+	@Exclude()
+	@Length(6, 255)
 	password: string;
 
 	@CreateDateColumn()
@@ -38,4 +46,13 @@ export default class User extends BaseEntity {
 
 	@UpdateDateColumn()
 	updatedAt: Date;
+
+	@BeforeInsert()
+	async hashPassword() {
+		this.password = await hash(this.password, 10);
+	}
+
+	toJSON() {
+		return classToPlain(this);
+	}
 }

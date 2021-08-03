@@ -8,6 +8,8 @@ import morgan from 'morgan';
 
 import cookieParser from 'cookie-parser';
 
+import cors from 'cors';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,7 +20,7 @@ import subRoutes from './routes/subs';
 
 import trim from './middleware/trim';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
@@ -28,6 +30,13 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.use(trim());
 app.use(cookieParser());
+app.use(
+	cors({
+		credentials: true,
+		origin: process.env.ORIGIN,
+		optionsSuccessStatus: 200,
+	}),
+);
 
 app.get('/', (_, res: Response) => {
 	return res.send('Hello World!');

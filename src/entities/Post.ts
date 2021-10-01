@@ -10,12 +10,13 @@ import {
 
 import { makeId, slugify } from '../util/helper';
 
-import { Expose } from 'class-transformer';
+import { Expose, Exclude } from 'class-transformer';
 
 import Entity from './Entity';
 import Sub from './Sub';
 import Comment from './Comment';
 import User from './User';
+import Vote from './Vote';
 
 @TOEntity('posts')
 export default class Post extends Entity {
@@ -64,6 +65,9 @@ export default class Post extends Entity {
 
 	@OneToMany(() => Comment, (comment) => comment.post)
 	comments: Comment[];
+
+	@OneToMany(() => Vote, (vote) => vote.post)
+	votes: Vote[];
 
 	@BeforeInsert()
 	makeIdAndSlug(): void {

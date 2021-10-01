@@ -39,6 +39,7 @@ const getPosts = async (_: Request, res: Response) => {
 			order: {
 				createdAt: 'DESC',
 			},
+			relations: ['comments', 'votes', 'sub'],
 		});
 		return res.json(posts);
 	} catch (err) {

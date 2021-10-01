@@ -9,8 +9,11 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 		// jsonwebtoken package will throw error if
 		// token is invalid
 		const { username }: any = jwt.verify(token, process.env.JWT_SECRET);
+		console.log('USERNAME: ', username);
 
 		const user = await User.findOne({ username });
+
+		console.log('USER: ', user);
 
 		if (!user) throw new Error('Unauthenticated');
 

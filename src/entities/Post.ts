@@ -1,4 +1,3 @@
-import { userInfo } from 'os';
 import {
 	Entity as TOEntity,
 	Column,
@@ -8,7 +7,10 @@ import {
 	BeforeInsert,
 	OneToMany,
 } from 'typeorm';
+
 import { makeId, slugify } from '../util/helper';
+
+import { Expose } from 'class-transformer';
 
 import Entity from './Entity';
 import Sub from './Sub';
@@ -37,14 +39,27 @@ export default class Post extends Entity {
 	body: string; // 7 character id
 
 	@Column({ nullable: true })
-	subName: string;
+	subname: string;
+
+	@Column()
+	username: string;
+
+	@Expose() get url(): string {
+		return `/r/${this.subname}/${this.identifier}/${this.slug}`;
+	}
+
+	// protected url: string;
+	// @AfterLoad()
+	// createFields() {
+	// 	this.url = `/r/${this.subname}/${this.identifier}/${this.slug}`;
+	// }
 
 	@ManyToOne(() => User, (user) => user.posts)
 	@JoinColumn({ name: 'username', referencedColumnName: 'username' })
 	user: User;
 
 	@ManyToOne(() => Sub, (sub) => sub.posts)
-	@JoinColumn({ name: 'Subname', referencedColumnName: 'name' })
+	@JoinColumn({ name: 'subname', referencedColumnName: 'name' })
 	sub: Sub;
 
 	@OneToMany(() => Comment, (comment) => comment.post)

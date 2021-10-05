@@ -26,23 +26,32 @@ export default class Comment extends Entity {
 
 	@Index()
 	@Column()
-	identifier: string;
+	identifier: string | undefined;
 
 	@Column()
-	body: string;
+	body: string | undefined;
 
 	@Column()
-	username: string;
+	username: string | undefined;
 
 	@ManyToOne(() => User)
 	@JoinColumn({ name: 'username', referencedColumnName: 'username' })
-	user: User;
+	user: User | undefined;
 
 	@ManyToOne(() => Post, (post) => post.comments, { nullable: false })
-	post: Post;
+	post: Post | undefined;
 
+	@Exclude()
 	@OneToMany(() => Vote, (vote) => vote.comment)
-	votes: Vote[];
+	votes: Vote[] | undefined;
+
+	protected userVote: number | undefined;
+	setUserVote(user: User) {
+		const index = this.votes?.findIndex(
+			(v) => v.username === user.username,
+		) as number;
+		this.userVote = index > -1 ? this.votes![index].value : 0;
+	}
 
 	@BeforeInsert()
 	makeIdAndSlug() {

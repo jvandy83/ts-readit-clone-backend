@@ -51,6 +51,7 @@ const register = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
 	const { username, password } = req.body;
+	console.log(username, password);
 	try {
 		const errors: any = {};
 		if (isEmpty(username)) errors.username = 'Username must not be empty';
@@ -65,12 +66,12 @@ const login = async (req: Request, res: Response) => {
 		if (!user) {
 			return res.status(404).json({ username: 'User not found' });
 		}
-		const match = compare(password, user.password);
+		const match = compare(password, user.password!);
 		if (!match) {
 			return res.status(401).json({ message: 'Invalid password' });
 		}
 
-		const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET);
+		const token = jwt.sign(user.toJSON(), process.env.JWT_SECRET!);
 
 		res.set(
 			'Set-Cookie',

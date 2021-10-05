@@ -27,23 +27,23 @@ export default class Post extends Entity {
 
 	@Index()
 	@Column()
-	identifier: string; // 7 character id
+	identifier: string | undefined; // 7 character id
 
 	@Column()
-	title: string; // 7 character id
+	title: string | undefined; // 7 character id
 
 	@Index()
 	@Column()
-	slug: string; // 7 character id
+	slug: string | undefined; // 7 character id
 
 	@Column({ nullable: true, type: 'text' })
-	body: string; // 7 character id
+	body: string | undefined; // 7 character id
 
 	@Column({ nullable: true })
-	subname: string;
+	subname: string | undefined;
 
 	@Column()
-	username: string;
+	username: string | undefined;
 
 	@Expose() get url(): string {
 		return `/r/${this.subname}/${this.identifier}/${this.slug}`;
@@ -57,21 +57,40 @@ export default class Post extends Entity {
 
 	@ManyToOne(() => User, (user) => user.posts)
 	@JoinColumn({ name: 'username', referencedColumnName: 'username' })
-	user: User;
+	user: User | undefined;
 
 	@ManyToOne(() => Sub, (sub) => sub.posts)
 	@JoinColumn({ name: 'subname', referencedColumnName: 'name' })
-	sub: Sub;
+	sub: Sub | undefined;
 
 	@OneToMany(() => Comment, (comment) => comment.post)
-	comments: Comment[];
+	comments: Comment[] | undefined;
 
 	@OneToMany(() => Vote, (vote) => vote.post)
-	votes: Vote[];
+	votes: Vote[] | undefined;
+
+	@Expose() get commentCount(): number {
+		return this.comments?.length!;
+	}
+
+	@Expose() get voteScore(): number {
+		return this.votes?.reduce(
+			(prev, curr) => prev + (curr.value || 0),
+			0,
+		) as number;
+	}
+
+	protected userVote: number | undefined;
+	setUserVote(user: User): any {
+		const index: number = this.votes?.findIndex(
+			(v) => v.username === user.username,
+		) as number;
+		this.userVote = index > -1 ? this.votes![index].value : 0;
+	}
 
 	@BeforeInsert()
 	makeIdAndSlug(): void {
 		this.identifier = makeId(7);
-		this.slug = slugify(this.title);
+		this.slug = slugify(this.title!);
 	}
 }

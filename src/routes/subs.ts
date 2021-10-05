@@ -3,9 +3,10 @@ import { Request, Response, Router } from 'express';
 import { getRepository } from 'typeorm';
 
 import User from '../entities/User';
-
 import Sub from '../entities/Sub';
 import auth from './auth';
+import user from '../middleware/user';
+import Post from '../entities/Post';
 
 import { isEmpty } from 'class-validator';
 
@@ -47,6 +48,32 @@ const createSub = async (req: Request, res: Response) => {
 	}
 };
 
-router.post('/', auth, createSub);
+const getSub = async (req: Request, res: Response) => {
+	const name = req.params.name;
+	console.log(res.locals.user);
+
+	try {
+		const sub = await Sub.findOneOrFail({ name });
+		const posts = await Post.find({
+			where: { sub },
+			order: { createdAt: 'DESC' },
+			relations: ['comments', 'votes'],
+		});
+
+		sub.posts = posts;
+
+		if (res.locals.user) {
+			sub.posts.forEach((p) => p.setUserVote(res.locals.user));
+		}
+
+		return res.json(sub);
+	} catch (err) {
+		console.log(err);
+		return res.status(404).json({ sub: 'Sub not found' });
+	}
+};
+
+router.post('/', user, auth, createSub);
+router.get('/:name', user, getSub);
 
 export default router;

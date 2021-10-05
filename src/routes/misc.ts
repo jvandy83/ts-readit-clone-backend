@@ -1,9 +1,11 @@
 import { Request, Response, Router } from 'express';
+
 import Comment from '../entities/Comment';
 import Post from '../entities/Post';
 import User from '../entities/User';
 import Vote from '../entities/Vote';
-import auth from './auth';
+
+import auth from '../middleware/auth';
 
 const router = Router();
 
@@ -22,7 +24,7 @@ const vote = async (req: Request, res: Response) => {
 	try {
 		const user: User = res.locals.user;
 		console.log(user);
-		let post = await Post.findOneOrFail({ slug, identifier });
+		let post: Post | undefined = await Post.findOneOrFail({ slug, identifier });
 		let vote: Vote | undefined;
 		let comment: Comment | undefined;
 
@@ -57,8 +59,12 @@ const vote = async (req: Request, res: Response) => {
 
 		post = await Post.findOne(
 			{ identifier, slug },
-			{ relations: ['sub', 'votes', 'comments'] },
+			{ relations: ['sub', 'votes', 'comments', 'comments.votes'] },
 		);
+
+		post.setUserVote(user);
+
+		post.comments.forEach((c) => c.setUserVote(user));
 
 		return res.json(post);
 	} catch (err) {

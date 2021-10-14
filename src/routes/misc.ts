@@ -1,9 +1,12 @@
 import { Request, Response, Router } from 'express';
 
+import { createQueryBuilder, getConnection } from 'typeorm';
+
 import Comment from '../entities/Comment';
 import Post from '../entities/Post';
 import User from '../entities/User';
 import Vote from '../entities/Vote';
+import Sub from '../entities/Sub';
 
 import auth from '../middleware/auth';
 
@@ -23,7 +26,6 @@ const vote = async (req: Request, res: Response) => {
 	}
 	try {
 		const user: User = res.locals.user;
-		console.log(user);
 		let post: Post | undefined = await Post.findOneOrFail({ slug, identifier });
 		let vote: Vote | undefined;
 		let comment: Comment | undefined;
@@ -73,6 +75,28 @@ const vote = async (req: Request, res: Response) => {
 	}
 };
 
+const topSubs = async (_: Request, res: Response) => {
+	try {
+		const imageUrlExp = `COALESCE(s."imageUrn", 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y')`;
+		const subs = await getConnection()
+			.createQueryBuilder()
+			.select(
+				`s.title, s.name, ${imageUrlExp} as "imageUrl", count(p.id) as "postCount"`,
+			)
+			.from(Sub, 's')
+			.leftJoin(Post, 'p', `p."subname" = s.name`)
+			.groupBy(`s.title, s.name, "imageUrl"`)
+			.orderBy(`"postCount"`, 'DESC')
+			.limit(5)
+			.execute();
+		return res.json(subs);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ message: 'Something went wrong' });
+	}
+};
+
 router.post('/vote', auth, vote);
+router.get('/top-subs', topSubs);
 
 export default router;

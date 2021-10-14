@@ -10,7 +10,7 @@ import {
 
 import { makeId, slugify } from '../util/helper';
 
-import { Expose, Exclude } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 import Entity from './Entity';
 import Sub from './Sub';
@@ -85,7 +85,7 @@ export default class Post extends Entity {
 		const index: number = this.votes?.findIndex(
 			(v) => v.username === user.username,
 		) as number;
-		this.userVote = index > -1 ? this.votes![index].value : 0;
+		this.userVote = index > -1 ? this.votes[index].value : 0;
 	}
 
 	@BeforeInsert()

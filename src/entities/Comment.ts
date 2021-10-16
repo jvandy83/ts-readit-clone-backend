@@ -8,6 +8,8 @@ import {
 	OneToMany,
 } from 'typeorm';
 
+import { Expose } from 'class-transformer';
+
 import Entity from './Entity';
 import Post from './Post';
 import User from './User';
@@ -44,6 +46,13 @@ export default class Comment extends Entity {
 	@Exclude()
 	@OneToMany(() => Vote, (vote) => vote.comment)
 	votes: Vote[] | undefined;
+
+	@Expose() get voteScore(): number {
+		return this.votes?.reduce(
+			(prev, curr) => prev + (curr.value || 0),
+			0,
+		) as number;
+	}
 
 	protected userVote: number | undefined;
 	setUserVote(user: User) {
